@@ -77,6 +77,10 @@ def eval_video(gt_path: str, vehicles_csv: str, violations_csv: str, tol: int) -
     vio = pd.read_csv(violations_csv, dtype=str).fillna("") if os.path.exists(violations_csv) else pd.DataFrame()
 
     gt_plates = sorted({_clean(p) for p in gt["plate"] if _clean(p)})
+    # a vehicle only "has a plate" when its read matches the plate format; partial / junk text
+    # (e.g. 4 random characters) is treated as "no plate read", not as a plate prediction
+    if "valid_format" in veh:
+        veh = veh[veh["valid_format"].astype(str).str.lower() == "true"]
     pred_plates = sorted({_clean(p) for p in veh.get("plate", []) if _clean(p)})
 
     # --- plate recognition ------------------------------------------------
@@ -105,23 +109,27 @@ def eval_video(gt_path: str, vehicles_csv: str, violations_csv: str, tol: int) -
     )
 
     # --- violation detection ---------------------------------------------
+    # Optional `track_id` column in the ground truth: the vehicle's ID in the annotated video.
+    # When given, a violation is matched to the vehicle itself, so detecting the violation and
+    # reading the plate are scored separately (a missed plate is not counted as a missed violation).
     gt_v = []
     for _, row in gt.iterrows():
         for v in str(row.get("violation", "")).split(";"):
             v = v.strip().upper()
             if v:
-                gt_v.append((_clean(row["plate"]), v))
-    pred_v = [(_clean(r.get("plate", "")), str(r.get("violation", "")).upper()) for _, r in vio.iterrows()]
+                gt_v.append((_clean(row["plate"]), v, str(row.get("track_id", "")).strip()))
+    pred_v = [(_clean(r.get("plate", "")), str(r.get("violation", "")).upper(), str(r.get("track_id", "")).strip())
+              for _, r in vio.iterrows()]
 
     by_type = {}
     used = set()
     tp_all = fp_all = 0
-    for i, (pp, pv) in enumerate(pred_v):
+    for i, (pp, pv, ptid) in enumerate(pred_v):
         hit = None
-        for j, (gp, gv) in enumerate(gt_v):
+        for j, (gp, gv, gtid) in enumerate(gt_v):
             if j in used or gv != pv:
                 continue
-            if pp and gp and levenshtein(pp, gp) <= tol:
+            if (gtid and ptid == gtid) or (pp and gp and levenshtein(pp, gp) <= tol):
                 hit = j
                 break
         t = by_type.setdefault(pv, dict(tp=0, fp=0, fn=0))
@@ -133,7 +141,7 @@ def eval_video(gt_path: str, vehicles_csv: str, violations_csv: str, tol: int) -
             t["tp"] += 1
             tp_all += 1
     fn_all = 0
-    for j, (_, gv) in enumerate(gt_v):
+    for j, (_, gv, _) in enumerate(gt_v):
         if j not in used:
             by_type.setdefault(gv, dict(tp=0, fp=0, fn=0))["fn"] += 1
             fn_all += 1
@@ -141,8 +149,9 @@ def eval_video(gt_path: str, vehicles_csv: str, violations_csv: str, tol: int) -
         t.update(prf(t["tp"], t["fp"], t["fn"]))
     violation_metrics = dict(ground_truth=len(gt_v), predicted=len(pred_v), tp=tp_all, fp=fp_all, fn=fn_all,
                              **prf(tp_all, fp_all, fn_all), by_type=by_type,
-                             note="A predicted violation counts as correct only if its type matches AND "
-                                  f"its plate is within {tol} character(s) of the true plate.")
+                             note="A predicted violation is correct when its type matches and it is the same "
+                                  "vehicle (same track ID, checked by eye in the annotated video) or its plate "
+                                  f"is within {tol} character(s) of the true plate.")
     return dict(plates=plate_metrics, per_plate=per_plate, violations=violation_metrics)
 
 
