@@ -33,6 +33,23 @@ video ─► YOLOv8 (car/bike/bus/truck) ─► ByteTrack IDs ─► rule engine
 - **Evaluation** - plate exact-match / character accuracy, violation precision / recall / F1,
   detector mAP, all written to `outputs/accuracy_report.md`.
 
+## Results
+
+Demo: Mumbai junction, 4K handheld footage (Pexels), laptop CPU only.
+Video: [`demo/mumbai_violations_demo.mp4`](demo/mumbai_violations_demo.mp4) · full write-up: [`REPORT.md`](REPORT.md)
+
+| | Result |
+|---|---|
+| Plate detector (YOLOv8n, held-out test set, 882 images) | **96.6 % precision, 85.7 % recall, 93.2 % mAP@0.5** |
+| Red-light violations (checked by eye) | **3 / 3 detected, 0 false alarms** |
+| Plates read exactly right (12 readable plates) | 3 / 12 (25 %) |
+| Plate precision (reported plates that are real) | 50 % (OCR-only baseline: 43 %) |
+| Second clip, Bhopal (plain fonts): plates read exactly | 2 / 3, 93 % character accuracy |
+| Speed | 1.8 FPS on 4K input, CPU only |
+
+The plate detector is strong; most remaining errors come from OCR on decorative taxi fonts,
+small plates and motion blur. See the report for the error analysis and next steps.
+
 ## Project structure
 ```
 anpr/
