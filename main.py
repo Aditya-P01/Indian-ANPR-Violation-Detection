@@ -78,7 +78,7 @@ def run(cfg: dict) -> dict:
     # Detection/tracking runs on the resized frame, but plates are cropped from the
     # ORIGINAL frame: on 4K footage a plate is ~3x more pixels than after resizing.
     full_res_ocr = bool(ocfg.get("full_res_crops", True))
-    max_crop_w = int(ocfg.get("max_crop_width", 960))
+    max_crop_w = int(ocfg.get("max_crop_width", 2400))
 
     print(f"[video] {source}  {W}x{H} @ {src_fps:.1f} fps, {total or '?'} frames")
     vehicle_model = YOLO(mcfg.get("vehicle", "yolov8n.pt"))

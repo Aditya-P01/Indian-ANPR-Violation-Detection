@@ -31,7 +31,7 @@ ocr:
   min_vehicle_width: 60             # px - skip OCR on vehicles that are too small/far
   min_plate_width: 30               # px
   full_res_crops: true              # crop plates from the original (e.g. 4K) frame, not the resized one
-  max_crop_width: 960               # downscale vehicle crops wider than this before plate search
+  max_crop_width: 2400              # downscale vehicle crops wider than this (keep 4K plate detail)
   min_confidence: 0.25              # drop OCR reads below this confidence
   # Plate format used to clean up and score reads. Default = Indian plates
   # (e.g. MH12AB1234, DL3CAF0001, KA05MN9). Set `format: none` for other countries.
