@@ -11,3 +11,4 @@ data/*.mov
 *.pt
 !weights/.gitkeep
 !weights/plate_yolov8n.pt
+/submission/
