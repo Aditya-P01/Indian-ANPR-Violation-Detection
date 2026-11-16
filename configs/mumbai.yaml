@@ -1,0 +1,55 @@
+# Demo: Mumbai junction (Pexels video 33604950, 4K, 19 s, 30 fps).
+# Taxis approach the camera over a zebra crossing; the signal on the left pole is
+# green 0-6.8 s, amber 6.8-9.7 s and RED from 9.7 s to the end (checked frame by frame).
+
+video:
+  source: data/mumbai_4k.mp4
+  output: outputs/mumbai/annotated_mumbai.mp4
+  resize_width: 1280
+  display: false
+  max_frames: null
+
+models:
+  vehicle: yolov8n.pt
+  plate: weights/plate_yolov8n.pt
+  vehicle_conf: 0.35
+  plate_conf: 0.25
+  plate_imgsz: 416
+  device: ""
+  tracker: bytetrack.yaml
+
+ocr:
+  languages: [en]
+  gpu: false
+  every_n_frames: 3
+  min_vehicle_width: 80
+  min_plate_width: 30
+  full_res_crops: true
+  max_crop_width: 960
+  min_confidence: 0.25
+  format: india
+
+rules:
+  red_light:
+    enabled: true
+    # just before the zebra crossing
+    stop_line: [[0.0, 0.78], [1.0, 0.78]]
+    signal:
+      mode: manual
+      red_intervals: [[9.7, 30]]
+
+  speed:
+    enabled: true
+    # approach lane: ~8 m between the lines (zebra crossing is ~4 m deep, used for scale)
+    line_a: [[0.0, 0.66], [1.0, 0.66]]
+    line_b: [[0.0, 0.88], [1.0, 0.88]]
+    distance_m: 8.0
+    limit_kmph: 30                  # junction / zebra-crossing limit
+
+  wrong_way:
+    enabled: false                  # vehicles turn across the junction here, so direction is not a rule
+
+output:
+  dir: outputs/mumbai
+  save_snapshots: true
+  save_plate_crops: true

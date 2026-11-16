@@ -1,0 +1,43 @@
+# Second test clip: Bhopal intersection / bridge approach (Pexels video 34430025, 4K, 16 s, 60 fps).
+# The camera pans a lot, so fixed virtual lines are not meaningful here: this clip is used
+# to measure plate recognition on a second city (MP plates). Violation rules are off.
+
+video:
+  source: data/bhopal_4k.mp4
+  output: outputs/bhopal/annotated_bhopal.mp4
+  resize_width: 1280
+  display: false
+  max_frames: null
+
+models:
+  vehicle: yolov8n.pt
+  plate: weights/plate_yolov8n.pt
+  vehicle_conf: 0.35
+  plate_conf: 0.25
+  plate_imgsz: 416
+  device: ""
+  tracker: bytetrack.yaml
+
+ocr:
+  languages: [en]
+  gpu: false
+  every_n_frames: 4                 # 60 fps footage: OCR a bit less often
+  min_vehicle_width: 80
+  min_plate_width: 30
+  full_res_crops: true
+  max_crop_width: 960
+  min_confidence: 0.25
+  format: india
+
+rules:
+  red_light:
+    enabled: false
+  speed:
+    enabled: false
+  wrong_way:
+    enabled: false
+
+output:
+  dir: outputs/bhopal
+  save_snapshots: true
+  save_plate_crops: true
