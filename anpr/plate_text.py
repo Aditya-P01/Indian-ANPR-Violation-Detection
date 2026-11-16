@@ -21,7 +21,8 @@ TO_LETTER = {"0": "O", "1": "I", "2": "Z", "3": "B", "4": "A", "5": "S", "6": "G
 INDIA_STATE_CODES = {
     "AN", "AP", "AR", "AS", "BR", "CG", "CH", "DD", "DL", "DN", "GA", "GJ", "HP", "HR", "JH",
     "JK", "KA", "KL", "LA", "LD", "MH", "ML", "MN", "MP", "MZ", "NL", "OD", "OR", "PB", "PY",
-    "RJ", "SK", "TN", "TR", "TS", "UK", "UP", "WB", "BH",
+    "RJ", "SK", "TN", "TR", "TS", "UK", "UP", "WB",
+    # "BH" (Bharat series) is NOT listed: those plates use a different layout, e.g. 22BH1234AA
 }
 
 # SS DD [L..LLL] NNNN   e.g. MH12AB1234, DL3CAF0001, KA05MN9999, TN09B1234
