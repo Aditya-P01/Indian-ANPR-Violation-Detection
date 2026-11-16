@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+outputs/
+runs/
+datasets/
+data/*.mp4
+data/*.avi
+data/*.mov
+*.pt
+!weights/.gitkeep
+!weights/plate_yolov8n.pt
