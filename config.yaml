@@ -1,0 +1,70 @@
+# ---------------------------------------------------------------------------
+# Traffic Violation Detection + License Plate Recognition - configuration
+#
+# All line / ROI coordinates are NORMALISED (0.0 - 1.0) relative to the frame
+# width and height, so they work at any resolution.
+# Use `python tools/pick_points.py --video <file>` to click them on your video.
+# ---------------------------------------------------------------------------
+
+video:
+  source: data/traffic.mp4          # input video (or 0 for webcam)
+  output: outputs/annotated.mp4     # annotated demo video
+  resize_width: 1280                # frames are resized to this width (keeps aspect)
+  display: false                    # show a live preview window (press q to quit)
+  max_frames: null                  # stop after N frames (null = whole video)
+
+models:
+  vehicle: yolov8n.pt               # COCO model, downloaded automatically by ultralytics
+  plate: weights/plate_yolov8n.pt   # trained plate detector (see train_plate_detector.py)
+                                    # if this file is missing, EasyOCR text detection on the
+                                    # vehicle crop is used as a fallback plate finder
+  vehicle_conf: 0.35
+  plate_conf: 0.25
+  plate_imgsz: 416                  # must match the --imgsz the plate detector was trained with
+  device: ""                        # "" = auto, "cpu", or "0" for first GPU
+  tracker: bytetrack.yaml           # bytetrack.yaml or botsort.yaml
+
+ocr:
+  languages: [en]
+  gpu: false
+  every_n_frames: 3                 # run OCR on each vehicle at most every N frames
+  min_vehicle_width: 60             # px - skip OCR on vehicles that are too small/far
+  min_plate_width: 30               # px
+  full_res_crops: true              # crop plates from the original (e.g. 4K) frame, not the resized one
+  max_crop_width: 960               # downscale vehicle crops wider than this before plate search
+  min_confidence: 0.25              # drop OCR reads below this confidence
+  # Plate format used to clean up and score reads. Default = Indian plates
+  # (e.g. MH12AB1234, DL3CAF0001, KA05MN9). Set `format: none` for other countries.
+  format: india
+
+rules:
+  red_light:
+    enabled: true
+    # Vehicles crossing this line while the signal is RED are violators.
+    stop_line: [[0.05, 0.62], [0.95, 0.62]]
+    signal:
+      # manual : RED during the listed [start, end] second intervals
+      # timed  : fixed cycle of red / green seconds
+      # auto   : read the colour of the traffic light inside `light_roi`
+      mode: manual
+      red_intervals: [[0, 8], [20, 30]]
+      timed: {red: 15, green: 15, start_red: true}
+      light_roi: [0.80, 0.02, 0.90, 0.25]   # [x1, y1, x2, y2] (auto mode)
+
+  speed:
+    enabled: true
+    # Two lines across the road a known real-world distance apart.
+    line_a: [[0.05, 0.45], [0.95, 0.45]]
+    line_b: [[0.05, 0.75], [0.95, 0.75]]
+    distance_m: 12.0                # real distance between line_a and line_b (metres)
+    limit_kmph: 50
+
+  wrong_way:
+    enabled: true
+    # Allowed direction: vehicles must cross line_a before line_b.
+    # Crossing line_b first and then line_a is flagged as WRONG WAY.
+
+output:
+  dir: outputs
+  save_snapshots: true              # save a JPG of every violation
+  save_plate_crops: true            # save the best plate crop for every vehicle
