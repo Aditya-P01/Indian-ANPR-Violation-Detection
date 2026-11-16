@@ -1,0 +1,4 @@
+track_id,plate,plate_conf,violation,vehicle,time_s,frame,signal,speed_kmph,snapshot
+52,MH014745,0.287,RED_LIGHT,car,10.17,305,RED,,outputs/mumbai\violations\RED_LIGHT_id52_f305.jpg
+64,MH03AT3430,0.763,RED_LIGHT,car,11.37,341,RED,,outputs/mumbai\violations\RED_LIGHT_id64_f341.jpg
+99,CHO159,0.317,RED_LIGHT,car,14.53,436,RED,,outputs/mumbai\violations\RED_LIGHT_id99_f436.jpg
